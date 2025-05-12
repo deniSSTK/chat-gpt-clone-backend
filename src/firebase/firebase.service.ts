@@ -15,7 +15,7 @@ export class FirebaseService {
 			this.firebaseApp = admin.initializeApp({
 				credential: admin.credential.cert('firebaseServiceAccountKey.json'),
 			})
-			this.logger.log('Firebase app created successfully');
+			this.logger.debug('Firebase app created successfully');
 		} catch (e) {
 			this.logger.error('Firebase app created failed', e);
 		}

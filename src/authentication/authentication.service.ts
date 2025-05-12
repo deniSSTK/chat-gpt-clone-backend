@@ -8,6 +8,19 @@ export interface iResult {
 	id: string;
 }
 
+export interface iUser {
+	email: string;
+	chatList: string[],
+	createdAt: number,
+	banned: boolean,
+	password: string,
+
+	// settings: {
+	// 	language: string;
+	// }
+	// нужно реализовывать анализ какой язык предпочитает юзер
+}
+
 @Injectable()
 export class AuthenticationService {
 	private logger = new Logger('AuthenticationService');
@@ -21,7 +34,7 @@ export class AuthenticationService {
 	async createUser(
 		email: string,
 		password: string
-	): Promise<iResult | never> {
+	): Promise<iResult> {
 		try {
 			const usersRef = this.db.collection('users');
 
@@ -36,15 +49,17 @@ export class AuthenticationService {
 
 			const hashedPassword = await bcrypt.hash(password, 12);
 
-			const newUser = await usersRef.add({
+			const newUser: iUser = {
 				email,
 				chatList: [],
 				createdAt: Date.now(),
 				banned: false,
 				password: hashedPassword,
-			});
+			};
 
-			return {id: newUser.id};
+			const addNewUser = await usersRef.add(newUser);
+
+			return {id: addNewUser.id};
 		} catch (error) {
 			throw new HttpException (
 				{ error: error.message || 'Internal Server Error' },

@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { FirebaseService } from '../firebase/firebase.service';
 import { firestore } from 'firebase-admin';
 import Firestore = firestore.Firestore;
-import { generateConversationNameConfig } from '../config/aiGenerateSettings';
+import { trimText } from '../services/stringManipulation';
 
 export interface iMessage {
 	content: string;
@@ -18,8 +18,6 @@ export interface iChatList {
 
 @Injectable()
 export class ChatsService {
-	private logger = new Logger('AuthenticationService');
-
 	private db: Firestore;
 
 	constructor(private readonly firebaseService: FirebaseService) {
@@ -35,29 +33,13 @@ export class ChatsService {
 			const chatRef = this.db.collection('chats').doc(chatId);
 			const chatDoc = await chatRef.get();
 			if (!chatDoc.exists) {
-				const messagesForGenerate = generateConversationNameConfig(messages[0].content);
-
-				const response = await fetch('https://model-fast-api-w4du.onrender.com/chat', {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-						'accept': 'application/json',
-					},
-					body: JSON.stringify({
-						messages: messagesForGenerate
-					})
-				})
-
-				const data = await response.json();
-				const chatName = data.split('</think>\n\n')[1].trim();
-
 				await chatRef.set({
 					messages: messages,
 					timeCreated: Date.now(),
 					creatorId: userId,
 					lastMessageTime: Date.now(),
 					isActive: true,
-					chatName,
+					chatName: trimText(messages[0].content),
 				})
 
 				const userRef = this.db.collection('users').doc(userId);

@@ -27,7 +27,6 @@ export class AuthenticationController {
 	) {
 		try {
 			const userId = req.cookies['userId'];
-			this.logger.log(`get cookies: id=${userId}`);
 			res.json({ isAuthenticated: userId !== undefined });
 		} catch (error) {
 			throw new HttpException(

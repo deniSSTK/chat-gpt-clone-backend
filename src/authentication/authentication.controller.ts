@@ -30,8 +30,8 @@ export class AuthenticationController {
 			const result: iResult = await this.authenticationService.logIn(email, password);
 			res.cookie('userId', result.id, {
 				httpOnly: true,
-				secure: false,
-				sameSite: 'lax',
+				secure: true,
+				sameSite: 'none',
 				maxAge: 24 * 60 * 60 * 7000,
 			});
 			res.status(HttpStatus.OK).json({
@@ -59,10 +59,10 @@ export class AuthenticationController {
 				const result: iResult = await this.authenticationService.createUser(email, password);
 				res.cookie('userId', result.id, {
 					httpOnly: true,
-					secure: false,
-					sameSite: 'lax',
+					secure: true,
+					sameSite: 'none',
 					maxAge: 24 * 60 * 60 * 7000,
-				})
+				});
 				res.status(HttpStatus.CREATED).json({
 					status: HttpStatus.CREATED,
 				});

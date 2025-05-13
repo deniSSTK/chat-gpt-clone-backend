@@ -26,6 +26,7 @@ export class AuthenticationController {
 		@Res() res: Response,
 	) {
 		const userId = req.cookies['userId'];
+		this.logger.log(`get cookies: id=${userId}`);
 		res.json({ isAuthenticated: userId !== undefined });
 	}
 

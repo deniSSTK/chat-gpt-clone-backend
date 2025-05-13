@@ -1,12 +1,22 @@
 import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Logger, Post, Req, Res } from '@nestjs/common';
 import { AuthenticationService, iResult } from './authentication.service';
 import { Response, Request } from 'express';
+import * as process from 'node:process';
 
 @Controller('authentication')
 export class AuthenticationController {
 	private logger = new Logger('AuthenticationController');
 
 	constructor(private readonly authenticationService: AuthenticationService) {}
+
+	private setCookies = (res: Response, param: string) => {
+		res.cookie('userId', param, {
+			httpOnly: true,
+			secure: process.env.NODE_ENV === 'production',
+			sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+			maxAge: 24 * 60 * 60 * 7000,
+		});
+	}
 
 	@Get('check-auth')
 	checkAuth(
@@ -15,6 +25,22 @@ export class AuthenticationController {
 	) {
 		const userId = req.cookies['userId'];
 		res.json({ isAuthenticated: userId !== undefined });
+	}
+
+	@Get('check-maintenance')
+	async checkMaintenance(
+	): Promise<
+		{maintenance: boolean}
+	> {
+		try {
+			const data = await this.authenticationService.checkMaintenance();
+			return { maintenance: data };
+		} catch (error) {
+			throw new HttpException(
+				error.message,
+				error.status,
+			)
+		}
 	}
 
 	@Post('log-in')
@@ -28,12 +54,7 @@ export class AuthenticationController {
 		try {
 			const { email, password } = body;
 			const result: iResult = await this.authenticationService.logIn(email, password);
-			res.cookie('userId', result.id, {
-				httpOnly: true,
-				secure: true,
-				sameSite: 'none',
-				maxAge: 24 * 60 * 60 * 7000,
-			});
+			this.setCookies(res, result.id);
 			res.status(HttpStatus.OK).json({
 				status: HttpStatus.OK
 			})
@@ -57,12 +78,7 @@ export class AuthenticationController {
 			try {
 				const { email, password } = body;
 				const result: iResult = await this.authenticationService.createUser(email, password);
-				res.cookie('userId', result.id, {
-					httpOnly: true,
-					secure: true,
-					sameSite: 'none',
-					maxAge: 24 * 60 * 60 * 7000,
-				});
+				this.setCookies(res, result.id);
 				res.status(HttpStatus.CREATED).json({
 					status: HttpStatus.CREATED,
 				});

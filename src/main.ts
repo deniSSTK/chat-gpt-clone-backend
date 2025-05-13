@@ -1,6 +1,10 @@
 import * as cookieParser from 'cookie-parser';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import * as dotenv from 'dotenv';
+import * as process from 'node:process';
+
+dotenv.config()
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
@@ -8,7 +12,7 @@ async function bootstrap() {
     app.use(cookieParser());
 
     app.enableCors({
-        origin: 'https://image-generator-woad-five.vercel.app',
+        origin: process.env.CLIENT_URL,
         credentials: true,
     });
 

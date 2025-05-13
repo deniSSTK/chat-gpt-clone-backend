@@ -96,4 +96,17 @@ export class AuthenticationService {
 
 		return { id: userDoc.id};
 	}
+
+	async checkMaintenance(): Promise<boolean> {
+		try {
+			const maintenanceRef = await this.db.collection('config').doc("global").get()
+			const data = maintenanceRef.data();
+			return data?.maintenance;
+		} catch (error) {
+			throw new HttpException (
+				error.message,
+				error.status,
+			);
+		}
+	}
 }

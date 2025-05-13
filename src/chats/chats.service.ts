@@ -87,19 +87,6 @@ export class ChatsService {
 			if (userDoc.exists) {
 				const userChatListIds = userDoc.data()?.chatList;
 
-				// const chatList: iChatList[] = await Promise.all(userChatListIds.map(async (id) => {
-				// 	const chatDoc = await this.db.collection('chats').doc(id).get();
-				// 	if (chatDoc.exists) {
-				// 		const data = chatDoc.data();
-				//
-				// 		return {
-				// 			chatName: data?.chatName || 'Unknown',
-				// 			chatId: id,
-				// 			lastMessageTime: data?.timeCreated || 0,
-				// 		};
-				// 	}
-				// }));
-
 				return  await Promise.all(userChatListIds.map(async (id) => {
 					const chatDoc = await this.db.collection('chats').doc(id).get();
 					if (chatDoc.exists) {

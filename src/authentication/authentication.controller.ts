@@ -14,7 +14,7 @@ export class AuthenticationController {
 		res.cookie('userId', param, {
 			httpOnly: true,
 			secure: process.env.NODE_ENV === 'production',
-			sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+			sameSite: 'none',
 			maxAge: 24 * 60 * 60 * 7000,
 		});
 		this.logger.log(`cookies successfuly saved: id=${param}`);
@@ -25,9 +25,16 @@ export class AuthenticationController {
 		@Req() req: Request,
 		@Res() res: Response,
 	) {
-		const userId = req.cookies['userId'];
-		this.logger.log(`get cookies: id=${userId}`);
-		res.json({ isAuthenticated: userId !== undefined });
+		try {
+			const userId = req.cookies['userId'];
+			this.logger.log(`get cookies: id=${userId}`);
+			res.json({ isAuthenticated: userId !== undefined });
+		} catch (error) {
+			throw new HttpException(
+				error.message,
+				error.status
+			)
+		}
 	}
 
 	@Get('check-maintenance')

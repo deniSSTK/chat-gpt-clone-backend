@@ -10,12 +10,14 @@ export class AuthenticationController {
 	constructor(private readonly authenticationService: AuthenticationService) {}
 
 	private setCookies = (res: Response, param: string) => {
+		this.logger.log(`set cookies: id=${param}`);
 		res.cookie('userId', param, {
 			httpOnly: true,
 			secure: process.env.NODE_ENV === 'production',
 			sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
 			maxAge: 24 * 60 * 60 * 7000,
 		});
+		this.logger.log(`cookies successfuly saved: id=${param}`);
 	}
 
 	@Get('check-auth')

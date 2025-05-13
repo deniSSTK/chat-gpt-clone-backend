@@ -8,7 +8,7 @@ async function bootstrap() {
     app.use(cookieParser());
 
     app.enableCors({
-        origin: 'https://image-generator-woad-five.vercel.app/log-in',
+        origin: 'https://image-generator-woad-five.vercel.app',
         credentials: true,
     });
 

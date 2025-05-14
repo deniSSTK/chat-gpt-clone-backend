@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Logger, Post, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Logger, Post, Req } from '@nestjs/common';
 import { ChatsService, iChatList, iMessage } from './chats.service';
 import { Request } from 'express';
 
@@ -59,6 +59,20 @@ export class ChatsController {
 			throw new HttpException(
 				{error: error.message, status: HttpStatus.INTERNAL_SERVER_ERROR},
 				HttpStatus.INTERNAL_SERVER_ERROR,
+			)
+		}
+	}
+
+	@Delete('delete-user-chats')
+	async deleteChats(
+		@Req() req: Request,
+	): Promise<boolean> {
+		try {
+			return await this.chatsService.deleteChats(req.cookies['userId']);
+		} catch (error) {
+			throw new HttpException(
+				error.message,
+				error.status,
 			)
 		}
 	}

@@ -1,4 +1,16 @@
-import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Logger, Post, Req, Res } from '@nestjs/common';
+import {
+	Body,
+	Controller,
+	Delete,
+	Get,
+	HttpCode,
+	HttpException,
+	HttpStatus,
+	Logger,
+	Post,
+	Req,
+	Res,
+} from '@nestjs/common';
 import { AuthenticationService, iResult } from './authentication.service';
 import { Response, Request } from 'express';
 import * as process from 'node:process';
@@ -10,14 +22,20 @@ export class AuthenticationController {
 	constructor(private readonly authenticationService: AuthenticationService) {}
 
 	private setCookies = (res: Response, param: string) => {
-		this.logger.log(`set cookies: id=${param}`);
 		res.cookie('userId', param, {
 			httpOnly: true,
 			secure: process.env.NODE_ENV === 'production',
-			sameSite: 'none',
+			sameSite: process.env.NODE_ENV === 'production' ? "none" : 'lax',
 			maxAge: 24 * 60 * 60 * 7000,
 		});
-		this.logger.log(`cookies successfuly saved: id=${param}`);
+	}
+
+	private deleteCookies = (res: Response) => {
+		res.clearCookie('userId', {
+			httpOnly: true,
+			secure: process.env.NODE_ENV === 'production',
+			sameSite: process.env.NODE_ENV === 'production' ? "none" : 'lax',
+		});
 	}
 
 	@Get('check-auth')
@@ -49,6 +67,18 @@ export class AuthenticationController {
 				error.message,
 				error.status,
 			)
+		}
+	}
+
+	@Delete('log-out')
+	async logOut(
+		@Res() res: Response
+	): Promise<void> {
+		try {
+			this.deleteCookies(res);
+			res.status(200).json({ success: true });
+		} catch (error: any) {
+			res.status(error.status || 500).json({ message: error.message || 'Internal server error' });
 		}
 	}
 

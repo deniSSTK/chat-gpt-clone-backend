@@ -36,7 +36,6 @@ export class AuthenticationService {
 		password: string
 	): Promise<iResult> {
 		try {
-			this.logger.log(`start create account: ${email}`)
 			const usersRef = this.db.collection('users');
 
 			const querySnapshot = await usersRef.where('email', '==', email).get();
@@ -60,7 +59,6 @@ export class AuthenticationService {
 
 			const addNewUser = await usersRef.add(newUser);
 
-			this.logger.log(`account created: ${email}=${addNewUser.id}`)
 			return {id: addNewUser.id};
 		} catch (error) {
 			throw new HttpException (
@@ -74,7 +72,6 @@ export class AuthenticationService {
 		email: string,
 		password: string
 	): Promise<iResult> {
-		this.logger.log(`start log in: ${email}`)
 		const usersRef = this.db.collection('users');
 		const querySnapshot = await usersRef.where('email', '==', email).get();
 
@@ -97,7 +94,6 @@ export class AuthenticationService {
 			);
 		}
 
-		this.logger.log(`successffuly log in: ${email}=${userDoc.id}`);
 		return { id: userDoc.id};
 	}
 

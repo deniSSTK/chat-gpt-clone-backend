@@ -143,4 +143,35 @@ export class ChatsService {
 			)
 		}
 	}
+
+	async deleteChats(
+		userId: string,
+	): Promise<boolean> {
+		try {
+			const userRef = this.db.collection('users').doc(userId);
+			const userDoc = await userRef.get();
+			const userData = userDoc.data();
+
+			if (!userData || !userData.chatList) {
+				throw new HttpException(
+					'User does not exist',
+					HttpStatus.NOT_FOUND
+				);
+			}
+
+			await userRef.update({
+				chatList: [],
+				logChatList: userData.logChatList
+					? [...userData.logChatList, ...userData.chatList]
+					: userData.chatList,
+			})
+
+			return true;
+		} catch (error) {
+			throw new HttpException(
+				error.message,
+				error.status
+			)
+		}
+	}
 }

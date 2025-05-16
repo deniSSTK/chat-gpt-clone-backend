@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpException, HttpStatus, Logger, Post, Req } from '@nestjs/common';
-import { ChatsService, iChatList, iMessage } from './chats.service';
+import { ChatsService, iChatList, iImage, iMessage } from './chats.service';
 import { Request } from 'express';
 
 @Controller('chats')
@@ -88,6 +88,41 @@ export class ChatsController {
 		} catch (error) {
 			throw new HttpException(
 				{ error: error.message },
+				error.status,
+			)
+		}
+	}
+
+	@Post('save-image-to-gallery')
+	async saveImageToGallery(
+		@Req() req: Request,
+		@Body() body: {
+			imageUrl: string;
+			prompt: string;
+		}): Promise<boolean> {
+		try {
+			return await this.chatsService.saveImageToGallery(
+				req.cookies['userId'],
+				body.imageUrl,
+				body.prompt
+			)
+		} catch (error) {
+			throw new HttpException(
+				error.message,
+				error.status,
+			)
+		}
+	}
+
+	@Get('get-all-images')
+	async getAllImages(
+		@Req() req: Request,
+	): Promise<iImage[]> {
+		try {
+			return await this.chatsService.getAllImages(req.cookies['userId']);
+		} catch(error) {
+			throw new HttpException(
+				error.message,
 				error.status,
 			)
 		}

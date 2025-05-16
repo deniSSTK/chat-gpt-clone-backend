@@ -14,6 +14,8 @@ export interface iUser {
 	createdAt: number,
 	banned: boolean,
 	password: string,
+	galleryList: string[],
+	personalityStyles: string;
 
 	// settings: {
 	// 	language: string;
@@ -55,6 +57,8 @@ export class AuthenticationService {
 				createdAt: Date.now(),
 				banned: false,
 				password: hashedPassword,
+				galleryList: [],
+				personalityStyles: ""
 			};
 
 			const addNewUser = await usersRef.add(newUser);
@@ -97,16 +101,16 @@ export class AuthenticationService {
 		return { id: userDoc.id};
 	}
 
-	async checkMaintenance(): Promise<boolean> {
-		try {
-			const maintenanceRef = await this.db.collection('config').doc("global").get()
-			const data = maintenanceRef.data();
-			return data?.maintenance;
-		} catch (error) {
-			throw new HttpException (
-				error.message,
-				error.status,
-			);
-		}
-	}
+	// async checkMaintenance(): Promise<boolean> {
+	// 	try {
+	// 		const maintenanceRef = await this.db.collection('config').doc("global").get()
+	// 		const data = maintenanceRef.data();
+	// 		return data?.maintenance;
+	// 	} catch (error) {
+	// 		throw new HttpException (
+	// 			error.message,
+	// 			error.status,
+	// 		);
+	// 	}
+	// }
 }

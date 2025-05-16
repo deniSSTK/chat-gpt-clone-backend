@@ -54,21 +54,21 @@ export class AuthenticationController {
 		}
 	}
 
-	@Get('check-maintenance')
-	async checkMaintenance(
-	): Promise<
-		{maintenance: boolean}
-	> {
-		try {
-			const data = await this.authenticationService.checkMaintenance();
-			return { maintenance: data };
-		} catch (error) {
-			throw new HttpException(
-				error.message,
-				error.status,
-			)
-		}
-	}
+	// @Get('check-maintenance')
+	// async checkMaintenance(
+	// ): Promise<
+	// 	{maintenance: boolean}
+	// > {
+	// 	try {
+	// 		const data = await this.authenticationService.checkMaintenance();
+	// 		return { maintenance: data };
+	// 	} catch (error) {
+	// 		throw new HttpException(
+	// 			error.message,
+	// 			error.status,
+	// 		)
+	// 	}
+	// }
 
 	@Delete('log-out')
 	async logOut(

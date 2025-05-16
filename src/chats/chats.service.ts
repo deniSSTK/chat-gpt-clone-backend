@@ -16,8 +16,14 @@ export interface iChatList {
 	lastMessageTime: number;
 }
 
+export interface iImage {
+	imageUrl: string;
+	prompt: string;
+}
+
 @Injectable()
 export class ChatsService {
+	private logger = new Logger('ChatsService');
 	private db: Firestore;
 
 	constructor(private readonly firebaseService: FirebaseService) {
@@ -47,11 +53,21 @@ export class ChatsService {
 					chatList: firestore.FieldValue.arrayUnion(chatId),
 				})
 			}
-			await chatRef.update({
-				messages: firestore.FieldValue.arrayUnion(...messages),
-				lastMessageTime: Date.now(),
-			})
-			return true;
+
+			const chatData = chatDoc.data();
+
+			if (chatData) {
+				await chatRef.update({
+					messages: [...chatData.messages, ...messages],
+					lastMessageTime: Date.now(),
+				});
+				return true;
+			}
+
+			throw new HttpException(
+				'Conflict',
+				HttpStatus.CONFLICT
+			)
 		} catch (error) {
 			throw new HttpException (
 				{ error: error.message || 'Internal Server Error' },
@@ -167,6 +183,55 @@ export class ChatsService {
 			})
 
 			return true;
+		} catch (error) {
+			throw new HttpException(
+				error.message,
+				error.status
+			)
+		}
+	}
+
+	async saveImageToGallery(
+		userId: string,
+		imageUrl: string,
+		prompt: string,
+	): Promise<boolean> {
+		try {
+			const userRef = this.db.collection('users').doc(userId);
+			const userSnap = await userRef.get();
+
+			if (!userSnap.exists) throw new HttpException(
+				'User not found',
+				HttpStatus.UNAUTHORIZED
+			);
+
+			const userDoc = userSnap.data() as {
+				galleryList: {
+					imageUrl: string;
+					prompt: string;
+				}[];
+			};
+
+			await userRef.update({
+				galleryList: [{ imageUrl, prompt }, ...userDoc.galleryList]
+			});
+			return true;
+		} catch (error) {
+			throw new HttpException(
+				error.message,
+				error.status
+			)
+		}
+	}
+
+	async getAllImages(
+		userId: string,
+	): Promise<iImage[]> {
+		try {
+			const userDoc = await this.db.collection('users').doc(userId).get();
+			const userData = userDoc.data() as { galleryList: iImage[] };
+
+			return userData.galleryList;
 		} catch (error) {
 			throw new HttpException(
 				error.message,

@@ -58,7 +58,7 @@ export class AuthenticationService {
 				banned: false,
 				password: hashedPassword,
 				galleryList: [],
-				personalityStyles: ""
+				personalityStyles: "default"
 			};
 
 			const addNewUser = await usersRef.add(newUser);

@@ -6,12 +6,12 @@ import {
 	HttpCode,
 	HttpException,
 	HttpStatus,
-	Logger,
+	Logger, Param,
 	Post,
 	Req,
 	Res,
 } from '@nestjs/common';
-import { AuthenticationService, iResult } from './authentication.service';
+import { AuthenticationService, iProfileInfo, iResult } from './authentication.service';
 import { Response, Request } from 'express';
 import * as process from 'node:process';
 
@@ -142,5 +142,29 @@ export class AuthenticationController {
 					HttpStatus.INTERNAL_SERVER_ERROR,
 				)
 			}
+	}
+
+	@Get('get-user-id')
+	async getUserId(
+		@Req() req: Request,
+	): Promise<string> {
+		try {
+			return req.cookies['userId'];
+		} catch (error) {
+			throw new HttpException(
+				error.message,
+				error.status
+			)
+		}
+	}
+
+	@Post("get-user-profile-info/:id")
+	async getUserProfileInfo(
+		@Param('id') id: string,
+		@Body() body: {
+			canEditPage: boolean
+		}
+	): Promise<iProfileInfo> {
+		return await this.authenticationService.getUserProfileInfo(id, body.canEditPage)
 	}
 }

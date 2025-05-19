@@ -3,6 +3,7 @@ import { FirebaseService } from '../firebase/firebase.service';
 import { firestore } from 'firebase-admin';
 import Firestore = firestore.Firestore;
 import { trimText } from '../services/stringManipulation';
+import { iUser } from '../authentication/authentication.service';
 
 export interface iMessage {
 	content: string;
@@ -49,19 +50,28 @@ export class ChatsService {
 				})
 
 				const userRef = this.db.collection('users').doc(userId);
-				await userRef.update({
-					chatList: firestore.FieldValue.arrayUnion(chatId),
-				})
+				const userDoc = await userRef.get();
+				const userData = userDoc.data() as iUser;
+				if (userDoc) {
+					await userRef.update({
+						chatList: firestore.FieldValue.arrayUnion(chatId),
+						chatsCount: userData.chatsCount + 1,
+					})
+				}
+
+				return true;
 			}
 
-			const chatData = chatDoc.data();
+			else {
+				const chatData = chatDoc.data();
 
-			if (chatData) {
-				await chatRef.update({
-					messages: [...chatData.messages, ...messages],
-					lastMessageTime: Date.now(),
-				});
-				return true;
+				if (chatData) {
+					await chatRef.update({
+						messages: [...chatData.messages, ...messages],
+						lastMessageTime: Date.now(),
+					});
+					return true;
+				}
 			}
 
 			throw new HttpException(
@@ -70,8 +80,8 @@ export class ChatsService {
 			)
 		} catch (error) {
 			throw new HttpException (
-				{ error: error.message || 'Internal Server Error' },
-				HttpStatus.INTERNAL_SERVER_ERROR
+				error.message,
+				error.status
 			);
 		}
 	}
@@ -104,13 +114,14 @@ export class ChatsService {
 			)
 		} catch (error) {
 			throw new HttpException(
-				{ error: error.message},
+				error.message,
 				error.status
 			)
 		}
 	}
 
 	async getAllMessages(
+		//TODO сделать проверку ваще что у юзера есть такой чат
 		chatId: string,
 	): Promise<iMessage[]> {
 		try {
@@ -209,11 +220,13 @@ export class ChatsService {
 				galleryList: {
 					imageUrl: string;
 					prompt: string;
-				}[];
+				}[],
+				imagesCount: number;
 			};
 
 			await userRef.update({
-				galleryList: [{ imageUrl, prompt }, ...userDoc.galleryList]
+				galleryList: [{ imageUrl, prompt }, ...userDoc.galleryList],
+				imagesCount: userDoc.imagesCount + 1,
 			});
 			return true;
 		} catch (error) {

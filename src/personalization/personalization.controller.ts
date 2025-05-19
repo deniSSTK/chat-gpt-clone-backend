@@ -38,4 +38,55 @@ export class PersonalizationController {
 			)
 		}
 	}
+
+	@Post('update-user-icon')
+	async setUserIcon(
+		@Req() req: Request,
+		@Body() body: {
+			imageUrl: string
+		}
+	): Promise<boolean> {
+		try {
+			return this.personalizationService.setUserIcon(body.imageUrl, req.cookies["userId"])
+		} catch (error) {
+			throw new HttpException(
+				error.message,
+				error.status
+			)
+		}
+	}
+
+	@Post('add-image-to-public-gallery')
+	async addImageToPublicGallery(
+		@Body() body: {
+			imageUrl: string
+		},
+		@Req() req: Request,
+	): Promise<boolean> {
+		try {
+			return await this.personalizationService.addImageToPublicGallery(req.cookies['userId'], body.imageUrl);
+		} catch (error) {
+			throw new HttpException(
+				error.message,
+				error.status
+			)
+		}
+	}
+
+	@Post('remove-image-from-public-gallery')
+	async removeImageFromPublicGallery(
+		@Body() body: {
+			imageUrl: string
+		},
+		@Req() req: Request,
+	): Promise<boolean> {
+		try {
+			return await this.personalizationService.removeImageFromPublicGallery(req.cookies['userId'], body.imageUrl);
+		} catch (error) {
+			throw new HttpException(
+				error.message,
+				error.status
+			)
+		}
+	}
 }

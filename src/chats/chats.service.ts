@@ -3,7 +3,7 @@ import { FirebaseService } from '../firebase/firebase.service';
 import { firestore } from 'firebase-admin';
 import Firestore = firestore.Firestore;
 import { trimText } from '../services/stringManipulation';
-import { iUser } from '../authentication/authentication.service';
+import { iResult, iUser } from '../authentication/authentication.service';
 
 export interface iMessage {
 	content: string;
@@ -121,7 +121,6 @@ export class ChatsService {
 	}
 
 	async getAllMessages(
-		//TODO сделать проверку ваще что у юзера есть такой чат
 		chatId: string,
 	): Promise<iMessage[]> {
 		try {
@@ -248,6 +247,52 @@ export class ChatsService {
 		} catch (error) {
 			throw new HttpException(
 				error.message,
+				error.status
+			)
+		}
+	}
+
+	async shareChat(
+		messages: iMessage[],
+	): Promise<iResult> {
+		try {
+			const shareChatsRef = this.db.collection('share-chats');
+
+			const newShareChat = {
+				messages,
+			}
+
+			const addNewShareChats = await shareChatsRef.add(newShareChat);
+
+			return {id: addNewShareChats.id};
+		} catch (error) {
+			throw new HttpException(
+				error.message,
+				error.status
+			)
+		}
+	}
+
+	async getAllShareChatMessages(
+		chatId: string,
+	): Promise<iMessage[]> {
+		try {
+			const chatRef = this.db.collection('share-chats').doc(chatId);
+			const chatData = await chatRef.get();
+			if (chatData.exists) {
+				const data = chatData.data();
+				if (data) return data.messages;
+			}
+			else {
+				throw new HttpException(
+					'Chat does not exist',
+					HttpStatus.NOT_FOUND
+				)
+			}
+			return [];
+		} catch (error) {
+			throw new HttpException(
+				{ error: error.message },
 				error.status
 			)
 		}

@@ -1,6 +1,7 @@
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Logger, Post, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Logger, Param, Post, Req } from '@nestjs/common';
 import { ChatsService, iChatList, iImage, iMessage } from './chats.service';
 import { Request } from 'express';
+import { iProfileInfo, iResult } from 'src/authentication/authentication.service';
 
 @Controller('chats')
 export class ChatsController {
@@ -124,6 +125,36 @@ export class ChatsController {
 			throw new HttpException(
 				error.message,
 				error.status,
+			)
+		}
+	}
+
+	@Post('add-share-chat')
+	async shareChat(
+		@Body() body: {
+			messages: iMessage[],
+		}
+	): Promise<iResult> {
+		try {
+			return this.chatsService.shareChat(body.messages)
+		} catch (error) {
+			throw new HttpException(
+				error.message,
+				error.status,
+			)
+		}
+	}
+
+	@Get("get-all-share-chat-messages/:id")
+	async getAllShareChatMessages(
+		@Param('id') id: string,
+	): Promise<iMessage[]> {
+		try {
+			return await this.chatsService.getAllShareChatMessages(id)
+		} catch (error) {
+			throw new HttpException(
+				error.message,
+				error.status
 			)
 		}
 	}
